@@ -6,65 +6,157 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type TestingStruct struct {
+type TestingStructSource struct {
 	Name string
 }
 
-type TestingStruct2 struct {
+type TestingStructDest struct {
 	Name string
 }
 
-func Test(t *testing.T) {
-	err := AddRoute[TestingStruct, *TestingStruct2](func(source TestingStruct, dest *TestingStruct2) error {
-		dest.Name = source.Name
-		return nil
+var converterFunc = func(source TestingStructSource, dest *TestingStructDest) error {
+	dest.Name = source.Name
+	return nil
+}
+
+func TestAddRoute(t *testing.T) {
+	err := AddRoute[TestingStructSource, TestingStructDest](converterFunc)
+	assert.NoError(t, err)
+}
+
+func TestMapTo(t *testing.T) {
+	_ = AddRoute[TestingStructSource, TestingStructDest](converterFunc)
+	t.Run("Source is a pointer to struct", func(t *testing.T) {
+		source := &TestingStructSource{Name: "Test1"}
+		dest, err := MapTo[TestingStructDest](source)
+		assert.NoError(t, err)
+		assert.Equal(t, source.Name, dest.Name)
 	})
-	assert.NoError(t, err)
-
-	source1 := &TestingStruct{Name: "Test1"}
-	dest1, err := MapTo[TestingStruct2](source1)
-	assert.NoError(t, err)
-	assert.Equal(t, source1.Name, dest1.Name)
-
-	source2 := TestingStruct{Name: "Test2"}
-	dest2, err := MapTo[TestingStruct2](source2)
-	assert.NoError(t, err)
-	assert.Equal(t, source2.Name, dest2.Name)
-
-	source3 := &TestingStruct{Name: "Test3"}
-	dest3 := &TestingStruct2{}
-	err = Map(source3, dest3)
-	assert.NoError(t, err)
-	assert.Equal(t, source3.Name, dest3.Name)
-
-	source4 := TestingStruct{Name: "Test4"}
-	dest4 := &TestingStruct2{}
-	err = Map(source4, dest4)
-	assert.NoError(t, err)
-	assert.Equal(t, source4.Name, dest4.Name)
-
-	sourceArr := []TestingStruct{
-		{
-			Name: "ArrayTest1",
-		},
-		{
-			Name: "ArrayTest2",
-		},
-		{
-			Name: "ArrayTest3",
-		},
-	}
-	destArr, err := MapTo[[]TestingStruct2](sourceArr)
-	assert.NoError(t, err)
-	assert.Equal(t, len(sourceArr), len(destArr))
-	for i, _ := range sourceArr {
-		assert.Equal(t, sourceArr[i].Name, destArr[i].Name)
-	}
-
-	destArr1, err := MapTo[[]TestingStruct2](&sourceArr)
-	assert.NoError(t, err)
-	assert.Equal(t, len(sourceArr), len(destArr1))
-	for i, _ := range sourceArr {
-		assert.Equal(t, sourceArr[i].Name, destArr1[i].Name)
-	}
+	t.Run("Source is a struct", func(t *testing.T) {
+		source := TestingStructSource{Name: "Test1"}
+		dest, err := MapTo[TestingStructDest](source)
+		assert.NoError(t, err)
+		assert.Equal(t, source.Name, dest.Name)
+	})
+	t.Run("Source is a slice", func(t *testing.T) {
+		source := []TestingStructSource{
+			{
+				Name: "ArrayTest1",
+			},
+			{
+				Name: "ArrayTest2",
+			},
+			{
+				Name: "ArrayTest3",
+			},
+		}
+		dest, err := MapTo[[]TestingStructDest](source)
+		assert.NoError(t, err)
+		assert.Equal(t, len(source), len(dest))
+		for i, _ := range source {
+			assert.Equal(t, source[i].Name, dest[i].Name)
+		}
+	})
+	t.Run("Source is a slice pointer", func(t *testing.T) {
+		source := &[]TestingStructSource{
+			{
+				Name: "ArrayTest1",
+			},
+			{
+				Name: "ArrayTest2",
+			},
+			{
+				Name: "ArrayTest3",
+			},
+		}
+		dest, err := MapTo[[]TestingStructDest](source)
+		assert.NoError(t, err)
+		assert.Equal(t, len(*source), len(dest))
+		for i, _ := range *source {
+			assert.Equal(t, (*source)[i].Name, dest[i].Name)
+		}
+	})
+	t.Run("Source is a pointer to pointer", func(t *testing.T) {
+		source := &TestingStructSource{Name: "Test1"}
+		_, err := MapTo[TestingStructDest](&source)
+		assert.Error(t, err)
+	})
+	t.Run("Dest is a pointer to pointer", func(t *testing.T) {
+		source := &TestingStructSource{Name: "Test1"}
+		_, err := MapTo[*TestingStructDest](source)
+		assert.Error(t, err)
+	})
+}
+func TestMap(t *testing.T) {
+	_ = AddRoute[TestingStructSource, TestingStructDest](converterFunc)
+	t.Run("Source is a pointer to struct", func(t *testing.T) {
+		source := &TestingStructSource{Name: "Test1"}
+		dest := &TestingStructDest{}
+		err := Map(source, dest)
+		assert.NoError(t, err)
+		assert.Equal(t, source.Name, dest.Name)
+	})
+	t.Run("Source is a struct", func(t *testing.T) {
+		source := TestingStructSource{Name: "Test1"}
+		dest := &TestingStructDest{}
+		err := Map(source, dest)
+		assert.NoError(t, err)
+		assert.Equal(t, source.Name, dest.Name)
+	})
+	t.Run("Source is a slice", func(t *testing.T) {
+		source := []TestingStructSource{
+			{
+				Name: "ArrayTest1",
+			},
+			{
+				Name: "ArrayTest2",
+			},
+			{
+				Name: "ArrayTest3",
+			},
+		}
+		var dest []TestingStructDest
+		err := Map(source, &dest)
+		assert.NoError(t, err)
+		assert.Equal(t, len(source), len(dest))
+		for i, _ := range source {
+			assert.Equal(t, source[i].Name, dest[i].Name)
+		}
+	})
+	t.Run("Source is a pointer to slice", func(t *testing.T) {
+		source := &[]TestingStructSource{
+			{
+				Name: "ArrayTest1",
+			},
+			{
+				Name: "ArrayTest2",
+			},
+			{
+				Name: "ArrayTest3",
+			},
+		}
+		var dest []TestingStructDest
+		err := Map(source, &dest)
+		assert.NoError(t, err)
+		assert.Equal(t, len(*source), len(dest))
+		for i, _ := range *source {
+			assert.Equal(t, (*source)[i].Name, dest[i].Name)
+		}
+	})
+	t.Run("Dest is a not a pointer", func(t *testing.T) {
+		source := TestingStructSource{Name: "Test1"}
+		dest := TestingStructDest{}
+		err := Map(source, dest)
+		assert.Error(t, err)
+	})
+	t.Run("Dest is nil", func(t *testing.T) {
+		source := TestingStructSource{Name: "Test1"}
+		err := Map(source, nil)
+		assert.Error(t, err)
+	})
+	t.Run("Source is nil", func(t *testing.T) {
+		dest := &TestingStructDest{}
+		err := Map(nil, dest)
+		assert.Error(t, err)
+	})
 }
