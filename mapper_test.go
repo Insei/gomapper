@@ -42,4 +42,29 @@ func Test(t *testing.T) {
 	err = Map(source4, dest4)
 	assert.NoError(t, err)
 	assert.Equal(t, source4.Name, dest4.Name)
+
+	sourceArr := []TestingStruct{
+		{
+			Name: "ArrayTest1",
+		},
+		{
+			Name: "ArrayTest2",
+		},
+		{
+			Name: "ArrayTest3",
+		},
+	}
+	destArr, err := MapTo[[]TestingStruct2](sourceArr)
+	assert.NoError(t, err)
+	assert.Equal(t, len(sourceArr), len(destArr))
+	for i, _ := range sourceArr {
+		assert.Equal(t, sourceArr[i].Name, destArr[i].Name)
+	}
+
+	destArr1, err := MapTo[[]TestingStruct2](&sourceArr)
+	assert.NoError(t, err)
+	assert.Equal(t, len(sourceArr), len(destArr1))
+	for i, _ := range sourceArr {
+		assert.Equal(t, sourceArr[i].Name, destArr1[i].Name)
+	}
 }
