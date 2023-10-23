@@ -8,7 +8,7 @@ import (
 var routes = map[reflect.Type]map[reflect.Type]func(source interface{}, dest interface{}) error{}
 
 func addSliceRoute[TSliceSource any, TSliceDest any](sliceMapFunc func(sourceSlice TSliceSource, destSlice TSliceDest) error) {
-	funcConverted1 := func(source any, dest any) error {
+	funcConverted := func(source any, dest any) error {
 		return sliceMapFunc(source.(TSliceSource), dest.(TSliceDest))
 	}
 	sourceSlice := *new(TSliceSource)
@@ -17,9 +17,9 @@ func addSliceRoute[TSliceSource any, TSliceDest any](sliceMapFunc func(sourceSli
 	var ok bool
 	if route, ok = routes[reflect.TypeOf(sourceSlice)]; !ok {
 		route = map[reflect.Type]func(source interface{}, dest interface{}) error{}
-		route[reflect.TypeOf(destSlice)] = funcConverted1
 		routes[reflect.TypeOf(sourceSlice)] = route
 	}
+	route[reflect.TypeOf(destSlice)] = funcConverted
 }
 
 func addSliceRoutes[TSource, TDest any]() {
@@ -31,6 +31,17 @@ func addSliceRoutes[TSource, TDest any]() {
 				return err
 			}
 			*pointerDestSlice = append(*pointerDestSlice, dest)
+		}
+		return nil
+	})
+	//source slice is a value, dest slice is a pointer with pointer elements
+	addSliceRoute[[]TSource, *[]*TDest](func(sourceSlice []TSource, pointerDestSlice *[]*TDest) error {
+		for _, source := range sourceSlice {
+			dest, err := MapTo[TDest](source)
+			if err != nil {
+				return err
+			}
+			*pointerDestSlice = append(*pointerDestSlice, &dest)
 		}
 		return nil
 	})

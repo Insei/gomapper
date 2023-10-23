@@ -29,11 +29,11 @@ func prepareSource(source any) any {
 
 func validateDest(dest any) error {
 	dValueOf := reflect.ValueOf(dest)
-	if dest == nil || dValueOf.IsNil() {
-		return fmt.Errorf("destenation value can't be nil")
-	}
 	if dValueOf.Kind() != reflect.Ptr {
 		return fmt.Errorf("destenation value should have a pointer type")
+	}
+	if dest == nil || dValueOf.IsNil() {
+		return fmt.Errorf("destenation value can't be nil")
 	}
 	if dValueOf.Elem().Kind() == reflect.Ptr {
 		return fmt.Errorf("destenation value should have a pointer type, not a pointer to pointer")
