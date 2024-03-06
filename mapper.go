@@ -5,15 +5,14 @@ import (
 	"reflect"
 )
 
-const RouteNotFoundError = "route does not exist in route map"
-
 func validateSource(source any) error {
-	sValueOf := reflect.ValueOf(source)
-	if source == nil || (sValueOf.Kind() == reflect.Ptr && sValueOf.IsNil()) {
-		return fmt.Errorf("source value cant't be nil")
+	sourceTypeName := getTypeName(source)
+	if source == nil {
+		return fmt.Errorf("source value can't be nil, source type: %s", sourceTypeName)
 	}
-	if sValueOf.Kind() == reflect.Ptr && sValueOf.Elem().Kind() == reflect.Ptr {
-		return fmt.Errorf("source can have a pointer type, but not a pointer to pointer")
+	typeOf := reflect.TypeOf(source)
+	if typeOf.Kind() == reflect.Ptr && typeOf.Elem().Kind() == reflect.Ptr {
+		return fmt.Errorf("source can have a pointer type, but not a pointer to pointer, source type: %s", sourceTypeName)
 	}
 	return nil
 }
@@ -27,16 +26,37 @@ func prepareSource(source any) any {
 	return sourceToMap
 }
 
+func getTypeNameRecursive(target reflect.Type, typeName string) string {
+	if target.Kind() == reflect.Ptr || target.Kind() == reflect.Slice {
+		newTarget := target.Elem()
+		newTypeName := "*" + typeName
+		if target.Kind() == reflect.Slice {
+			newTypeName = "[]" + typeName
+		}
+		return getTypeNameRecursive(newTarget, newTypeName)
+	}
+	return fmt.Sprintf("%s%s.%s", typeName, target.PkgPath(), target.Name())
+}
+
+func getTypeName(target any) string {
+	tt := reflect.TypeOf(target)
+	if target != nil || tt != nil {
+		return getTypeNameRecursive(tt, "")
+	}
+	return "undefined"
+}
+
 func validateDest(dest any) error {
 	dValueOf := reflect.ValueOf(dest)
+	dTypeName := getTypeName(dest)
 	if dValueOf.Kind() != reflect.Ptr {
-		return fmt.Errorf("destenation value should have a pointer type")
+		return fmt.Errorf("destenation value should have a pointer type, but has %s type", dTypeName)
 	}
 	if dest == nil || dValueOf.IsNil() {
-		return fmt.Errorf("destenation value can't be nil")
+		return fmt.Errorf("destenation value can't be nil, destenation type: %s", dTypeName)
 	}
-	if dValueOf.Elem().Kind() == reflect.Ptr {
-		return fmt.Errorf("destenation value should have a pointer type, not a pointer to pointer")
+	if dValueOf.Kind() == reflect.Ptr && dValueOf.Elem().Kind() == reflect.Ptr {
+		return fmt.Errorf("destenation value should have a pointer type, not a pointer to pointer, but has %s type", dTypeName)
 	}
 	return nil
 }
@@ -54,11 +74,13 @@ func Map(source interface{}, dest interface{}) error {
 	}
 	route, ok := routes[reflect.TypeOf(sourceForMap)]
 	if !ok {
-		return fmt.Errorf(RouteNotFoundError)
+		return fmt.Errorf("route not found for type %s to type %s",
+			getTypeName(sourceForMap), getTypeName(dest))
 	}
 	mapFunc, ok := route[reflect.TypeOf(dest)]
 	if !ok {
-		return fmt.Errorf(RouteNotFoundError)
+		return fmt.Errorf("route not found for type %s to type %s",
+			getTypeName(sourceForMap), getTypeName(dest))
 	}
 	return mapFunc(sourceForMap, dest)
 }

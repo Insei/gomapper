@@ -63,11 +63,11 @@ func AddRoute[TSource, TDest any | []any](mapFunc func(source TSource, dest *TDe
 	dest := *new(TDest)
 	destValueOf := reflect.ValueOf(dest)
 	if destValueOf.Kind() == reflect.Ptr {
-		return fmt.Errorf("destination type can't be reference type")
+		return fmt.Errorf("destination type can't be reference type, route: %s -> %s", getTypeName(source), getTypeName(dest))
 	}
 	sourceValueOf := reflect.ValueOf(source)
 	if sourceValueOf.Kind() == reflect.Ptr {
-		return fmt.Errorf("source type can't be reference type")
+		return fmt.Errorf("source type can't be reference type, route: %s -> %s", getTypeName(source), getTypeName(dest))
 	}
 	var route map[reflect.Type]func(source interface{}, dest interface{}) error
 	route, ok := routes[reflect.TypeOf(source)]
