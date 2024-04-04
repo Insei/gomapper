@@ -57,6 +57,44 @@ func TestMapTo(t *testing.T) {
 			assert.Equal(t, source[i].Name, dest[i].Name)
 		}
 	})
+	t.Run("Source is a slice with pointer elements", func(t *testing.T) {
+		source := []*TestingStructSource{
+			{
+				Name: "ArrayTest1",
+			},
+			{
+				Name: "ArrayTest2",
+			},
+			{
+				Name: "ArrayTest3",
+			},
+		}
+		dest, err := MapTo[[]TestingStructDest](source)
+		assert.NoError(t, err)
+		assert.Equal(t, len(source), len(dest))
+		for i, _ := range source {
+			assert.Equal(t, source[i].Name, dest[i].Name)
+		}
+	})
+	t.Run("Source is a slice with pointer elements, dest is a slice with pointer elements", func(t *testing.T) {
+		source := []*TestingStructSource{
+			{
+				Name: "ArrayTest1",
+			},
+			{
+				Name: "ArrayTest2",
+			},
+			{
+				Name: "ArrayTest3",
+			},
+		}
+		dest, err := MapTo[[]*TestingStructDest](source)
+		assert.NoError(t, err)
+		assert.Equal(t, len(source), len(dest))
+		for i, _ := range source {
+			assert.Equal(t, source[i].Name, dest[i].Name)
+		}
+	})
 	t.Run("Source is a slice pointer", func(t *testing.T) {
 		source := &[]TestingStructSource{
 			{
