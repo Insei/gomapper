@@ -45,16 +45,16 @@ func parseOptions(options []AutoMapperOption, sourceType reflect.Type) {
 }
 
 func setFieldRecursive(sourceFld, destFld fields.Field, source, dest any) error {
+	if r, ok := getRouteIfExists(sourceFld, destFld); ok {
+		return r(sourceFld.Get(source), destFld.Get(dest))
+	}
+
 	if sourceFld.Type.Kind() != reflect.Struct {
 		sourceVal := sourceFld.Get(source)
 		if sourceVal != nil {
 			destFld.Set(dest, sourceVal)
 		}
 		return nil
-	}
-
-	if r, ok := getRouteIfExists(sourceFld, destFld); ok {
-		return r(sourceFld.Get(source), destFld.Get(dest))
 	}
 
 	sourceStructField := sourceFld.Get(source)
@@ -77,10 +77,12 @@ func setFieldRecursive(sourceFld, destFld fields.Field, source, dest any) error 
 
 func getRouteIfExists(sourceFld, destFld fields.Field) (func(source interface{}, dest interface{}) error, bool) {
 	destType := destFld.Type
-	if destType.Kind() != reflect.Ptr {
-		destType = reflect.PointerTo(destType)
+	sourceType := sourceFld.Type
+	for sourceType.Kind() == reflect.Ptr {
+		sourceType = sourceType.Elem()
 	}
-	r, ok := routes[sourceFld.Type][destType]
+	destType = reflect.PointerTo(destType)
+	r, ok := routes[sourceType][destType]
 	return r, ok
 }
 

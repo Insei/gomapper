@@ -3,16 +3,19 @@ package gomapper
 import (
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 type AutoMappingStructSource struct {
 	Name         string
+	PtrTime      *time.Time
 	NestedStruct NestedStructSource
 }
 
 type AutoMappingStructDest struct {
 	Name         string
 	SecondName   string
+	PtrTime      *time.Time
 	NestedStruct NestedStructDest
 }
 
@@ -38,7 +41,8 @@ type DeepNestedStructDest struct {
 func TestAutoRoute(t *testing.T) {
 	_ = AutoRoute[AutoMappingStructSource, AutoMappingStructDest]()
 	t.Run("Auto route without options", func(t *testing.T) {
-		source := &AutoMappingStructSource{Name: "Test1"}
+		dt := time.Now()
+		source := &AutoMappingStructSource{Name: "Test1", PtrTime: &dt}
 		dest, err := MapTo[AutoMappingStructDest](source)
 		assert.NoError(t, err)
 		assert.Equal(t, source.Name, dest.Name)

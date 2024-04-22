@@ -2,7 +2,9 @@ package gomapper
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"reflect"
+	"time"
 )
 
 var routes = map[reflect.Type]map[reflect.Type]func(source interface{}, dest interface{}) error{}
@@ -108,13 +110,10 @@ func addSliceRoutes[TSource, TDest any]() {
 	})
 }
 
-func AddRoute[TSource, TDest any | []any](mapFunc func(source TSource, dest *TDest) error) error {
+func addRoute[TSource, TDest any | []any](mapFunc func(source TSource, dest *TDest) error) error {
 	source := *new(TSource)
 	dest := *new(TDest)
-	destValueOf := reflect.ValueOf(dest)
-	if destValueOf.Kind() == reflect.Ptr {
-		return fmt.Errorf("destination type can't be reference type, route: %s -> %s", getTypeName(source), getTypeName(dest))
-	}
+
 	sourceValueOf := reflect.ValueOf(source)
 	if sourceValueOf.Kind() == reflect.Ptr {
 		return fmt.Errorf("source type can't be reference type, route: %s -> %s", getTypeName(source), getTypeName(dest))
@@ -126,15 +125,43 @@ func AddRoute[TSource, TDest any | []any](mapFunc func(source TSource, dest *TDe
 		routes[reflect.TypeOf(source)] = route
 	}
 	funcConverted := func(source any, dest any) error {
-		sourceForMap := source
 		sourceValueOf := reflect.ValueOf(source)
-		if sourceValueOf.Kind() == reflect.Ptr {
-			sourceForMap = sourceValueOf.Elem().Interface()
+		for sourceValueOf.Kind() == reflect.Ptr {
+			if sourceValueOf.IsNil() {
+				return nil
+			}
+			sourceValueOf = sourceValueOf.Elem()
 		}
-		return mapFunc(sourceForMap.(TSource), dest.(*TDest))
+		return mapFunc(sourceValueOf.Interface().(TSource), dest.(*TDest))
 	}
 	route[reflect.TypeOf(&dest)] = funcConverted
 	// source is value, dest is ptr - its important
 	addSliceRoutes[TSource, TDest]()
 	return nil
+}
+
+func addBaseTypesRoutes() {
+	_ = addRoute[time.Time, *time.Time](func(source time.Time, dest **time.Time) error {
+		*dest = &source
+		return nil
+	})
+	_ = addRoute[time.Time, time.Time](func(source time.Time, dest *time.Time) error {
+		dest = &source
+		return nil
+	})
+	_ = addRoute[uuid.UUID, *uuid.UUID](func(source uuid.UUID, dest **uuid.UUID) error {
+		*dest = &source
+		return nil
+	})
+	_ = addRoute[uuid.UUID, uuid.UUID](func(source uuid.UUID, dest *uuid.UUID) error {
+		dest = &source
+		return nil
+	})
+}
+
+func AddRoute[TSource, TDest any | []any](mapFunc func(source TSource, dest *TDest) error) error {
+	if len(routes) == 0 {
+		addBaseTypesRoutes()
+	}
+	return addRoute[TSource, TDest](mapFunc)
 }
