@@ -146,7 +146,7 @@ func addBaseTypesRoutes() {
 		return nil
 	})
 	_ = addRoute[time.Time, time.Time](func(source time.Time, dest *time.Time) error {
-		dest = &source
+		*dest = source
 		return nil
 	})
 	_ = addRoute[uuid.UUID, *uuid.UUID](func(source uuid.UUID, dest **uuid.UUID) error {
@@ -154,7 +154,7 @@ func addBaseTypesRoutes() {
 		return nil
 	})
 	_ = addRoute[uuid.UUID, uuid.UUID](func(source uuid.UUID, dest *uuid.UUID) error {
-		dest = &source
+		*dest = source
 		return nil
 	})
 }
