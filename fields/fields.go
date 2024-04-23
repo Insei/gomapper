@@ -46,6 +46,10 @@ func (f Field) Get(obj interface{}) interface{} {
 			return getPtrValue[*bool](ptrToField)
 		case reflect.Struct:
 			return reflect.NewAt(f.Type, ptrToField).Interface()
+		case reflect.Slice:
+			return reflect.NewAt(f.Type, ptrToField).Interface()
+		case reflect.Array:
+			return reflect.NewAt(f.Type, ptrToField).Interface()
 		default:
 			panic("unhandled default case")
 		}
@@ -70,6 +74,10 @@ func (f Field) Get(obj interface{}) interface{} {
 		case reflect.Bool:
 			return getPtrValue[bool](ptrToField)
 		case reflect.Struct:
+			return reflect.NewAt(f.Type, ptrToField).Interface()
+		case reflect.Slice:
+			return reflect.NewAt(f.Type, ptrToField).Interface()
+		case reflect.Array:
 			return reflect.NewAt(f.Type, ptrToField).Interface()
 		default:
 			panic("unhandled default case")

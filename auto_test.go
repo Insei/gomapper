@@ -1,6 +1,7 @@
 package gomapper
 
 import (
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -8,14 +9,20 @@ import (
 
 type AutoMappingStructSource struct {
 	Name         string
+	Time         time.Time
+	UUID         uuid.UUID
 	PtrTime      *time.Time
+	PtrUUID      *uuid.UUID
 	NestedStruct NestedStructSource
 }
 
 type AutoMappingStructDest struct {
 	Name         string
 	SecondName   string
+	Time         time.Time
+	UUID         uuid.UUID
 	PtrTime      *time.Time
+	PtrUUID      *uuid.UUID
 	NestedStruct NestedStructDest
 }
 
@@ -41,11 +48,16 @@ type DeepNestedStructDest struct {
 func TestAutoRoute(t *testing.T) {
 	_ = AutoRoute[AutoMappingStructSource, AutoMappingStructDest]()
 	t.Run("Auto route without options", func(t *testing.T) {
-		dt := time.Now()
-		source := &AutoMappingStructSource{Name: "Test1", PtrTime: &dt}
+		ptrTime := time.Now()
+		ptrUuid := uuid.New()
+		source := &AutoMappingStructSource{Name: "Test1", Time: time.Now(), UUID: uuid.New(), PtrTime: &ptrTime, PtrUUID: &ptrUuid}
 		dest, err := MapTo[AutoMappingStructDest](source)
 		assert.NoError(t, err)
 		assert.Equal(t, source.Name, dest.Name)
+		assert.Equal(t, source.Time, dest.Time)
+		assert.Equal(t, source.UUID, dest.UUID)
+		assert.Equal(t, source.PtrUUID, dest.PtrUUID)
+		assert.Equal(t, source.PtrTime, dest.PtrTime)
 	})
 	_ = AutoRoute[AutoMappingStructSource, AutoMappingStructDest](WithFieldRoute("Name", "SecondName"))
 	t.Run("Auto route with options", func(t *testing.T) {
