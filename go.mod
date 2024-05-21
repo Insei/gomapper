@@ -1,4 +1,4 @@
-module gomapper
+module github.com/insei/gomapper
 
 go 1.18
 
