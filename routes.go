@@ -2,9 +2,10 @@ package gomapper
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"reflect"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 var routes = map[reflect.Type]map[reflect.Type]func(source interface{}, dest interface{}) error{}

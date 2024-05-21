@@ -1,9 +1,10 @@
 package gomapper
 
 import (
-	"github.com/insei/gomapper/fields"
 	"reflect"
 	"strings"
+
+	"github.com/insei/fmap"
 )
 
 var manualFieldRoutes = map[reflect.Type]map[string]string{}
@@ -11,8 +12,8 @@ var manualFieldRoutes = map[reflect.Type]map[string]string{}
 func AutoRoute[TSource, TDest any | []any](options ...AutoMapperOption) error {
 	s := new(TSource)
 	d := new(TDest)
-	sourceFields := fields.GetFrom(s)
-	destFields := fields.GetFrom(d)
+	sourceFields := fmap.GetFrom(s)
+	destFields := fmap.GetFrom(d)
 	sourceType := reflect.TypeOf(s)
 
 	parseOptions(options, sourceType)
@@ -44,9 +45,9 @@ func parseOptions(options []AutoMapperOption, sourceType reflect.Type) {
 	}
 }
 
-func setFieldRecursive(sourceFld, destFld fields.Field, source, dest any) error {
+func setFieldRecursive(sourceFld, destFld fmap.Field, source, dest any) error {
 	if r, ok := getRouteIfExists(sourceFld, destFld); ok {
-		return r(sourceFld.Get(source), destFld.Get(dest))
+		return r(sourceFld.Get(source), destFld.GetPtr(dest))
 	}
 
 	if sourceFld.Type.Kind() != reflect.Struct {
@@ -57,10 +58,10 @@ func setFieldRecursive(sourceFld, destFld fields.Field, source, dest any) error 
 		return nil
 	}
 
-	sourceStructField := sourceFld.Get(source)
-	sourceFields := fields.GetFrom(sourceStructField)
-	destStructField := destFld.Get(dest)
-	destFields := fields.GetFrom(destStructField)
+	sourceStructField := sourceFld.GetPtr(source)
+	sourceFields := fmap.GetFrom(sourceStructField)
+	destStructField := destFld.GetPtr(dest)
+	destFields := fmap.GetFrom(destStructField)
 
 	for fieldName, sField := range sourceFields {
 		dField, ok := destFields[getDestFieldName(sField.Type, fieldName)]
@@ -75,7 +76,7 @@ func setFieldRecursive(sourceFld, destFld fields.Field, source, dest any) error 
 	return nil
 }
 
-func getRouteIfExists(sourceFld, destFld fields.Field) (func(source interface{}, dest interface{}) error, bool) {
+func getRouteIfExists(sourceFld, destFld fmap.Field) (func(source interface{}, dest interface{}) error, bool) {
 	destType := destFld.Type
 	sourceType := sourceFld.Type
 	for sourceType.Kind() == reflect.Ptr {
