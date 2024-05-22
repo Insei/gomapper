@@ -2,7 +2,6 @@ package gomapper
 
 import (
 	"reflect"
-	"strings"
 
 	"github.com/insei/fmap"
 )
@@ -21,7 +20,7 @@ func AutoRoute[TSource, TDest any | []any](options ...AutoMapperOption) error {
 	mapFunc := func(source TSource, dest *TDest) error {
 		for key, sourceFld := range sourceFields {
 			destFld, ok := destFields[getDestFieldName(sourceType, key)]
-			if !ok || strings.Contains(key, ".") {
+			if !ok {
 				continue
 			}
 			if err := setFieldRecursive(sourceFld, destFld, source, dest); err != nil {
@@ -65,7 +64,7 @@ func setFieldRecursive(sourceFld, destFld fmap.Field, source, dest any) error {
 
 	for fieldName, sField := range sourceFields {
 		dField, ok := destFields[getDestFieldName(sField.Type, fieldName)]
-		if !ok || strings.Contains(fieldName, ".") {
+		if !ok {
 			continue
 		}
 		err := setFieldRecursive(sField, dField, sourceStructField, destStructField)

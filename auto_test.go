@@ -95,7 +95,6 @@ func TestAutoRoute(t *testing.T) {
 		}
 		dest, err := MapTo[AutoMappingStructDest](source)
 		assert.NoError(t, err)
-		assert.Equal(t, "", dest.NestedStruct.FirstNestedName)
-		assert.Equal(t, source.NestedStruct.FirstNestedName, dest.NestedStruct.FirstNestedSecondName)
+		assert.Equal(t, source.NestedStruct.FirstNestedName, dest.NestedStruct.FirstNestedName)
 	})
 }

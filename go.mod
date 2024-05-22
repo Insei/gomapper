@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/google/uuid v1.6.0
-	github.com/insei/fmap v1.0.1
+	github.com/insei/fmap v1.0.2
 	github.com/stretchr/testify v1.9.0
 )
 

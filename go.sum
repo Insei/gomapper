@@ -2,10 +2,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/insei/fmap v1.0.0 h1:WYTxwjlI8SqSs7ppmxaxZynCmDdXr58bwSw+aCTYHdw=
-github.com/insei/fmap v1.0.0/go.mod h1:gPOnDZPBeMkalO+i+AdTGCPq/z8lHWlRvafqkYqGm5Q=
-github.com/insei/fmap v1.0.1 h1:JBaBwVj0hH9wmmP2XFc+4Mc4Q96nkGgyviq0t0zsHNw=
-github.com/insei/fmap v1.0.1/go.mod h1:VUR/SehUpVXQqCX4o9wm/gdhHrdgRy2Ucyklnv5iDNw=
+github.com/insei/fmap v1.0.2 h1:QBq2iO0B2jcY6HOyNzij3kX2YjNj/pUB9G5mkm4EZR8=
+github.com/insei/fmap v1.0.2/go.mod h1:dcTq2SHdtlqmKuxuBHHa6zL+oFPpMbN64HtAuq2PcUU=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=

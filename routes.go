@@ -3,9 +3,6 @@ package gomapper
 import (
 	"fmt"
 	"reflect"
-	"time"
-
-	"github.com/google/uuid"
 )
 
 var routes = map[reflect.Type]map[reflect.Type]func(source interface{}, dest interface{}) error{}
@@ -141,28 +138,6 @@ func addRoute[TSource, TDest any | []any](mapFunc func(source TSource, dest *TDe
 	return nil
 }
 
-func addBaseTypesRoutes() {
-	_ = addRoute[time.Time, *time.Time](func(source time.Time, dest **time.Time) error {
-		*dest = &source
-		return nil
-	})
-	_ = addRoute[time.Time, time.Time](func(source time.Time, dest *time.Time) error {
-		*dest = source
-		return nil
-	})
-	_ = addRoute[uuid.UUID, *uuid.UUID](func(source uuid.UUID, dest **uuid.UUID) error {
-		*dest = &source
-		return nil
-	})
-	_ = addRoute[uuid.UUID, uuid.UUID](func(source uuid.UUID, dest *uuid.UUID) error {
-		*dest = source
-		return nil
-	})
-}
-
 func AddRoute[TSource, TDest any | []any](mapFunc func(source TSource, dest *TDest) error) error {
-	if len(routes) == 0 {
-		addBaseTypesRoutes()
-	}
 	return addRoute[TSource, TDest](mapFunc)
 }
