@@ -1,3 +1,7 @@
+[![codecov](https://codecov.io/github/Insei/gomapper/graph/badge.svg?token=85LGN4NOFA)](https://codecov.io/github/Insei/gomapper)
+[![build](https://github.com/insei/gomapper/actions/workflows/go.yml/badge.svg)](https://github.com/Insei/gomapper/actions/workflows/go.yml)
+[![Goreport](https://goreportcard.com/badge/github.com/insei/gomapper)](https://goreportcard.com/report/github.com/insei/gomapper)
+[![GoDoc](https://godoc.org/github.com/insei/gomapper?status.svg)](https://godoc.org/github.com/insei/gomapper)
 # GoMapper 
 GoMapper is a library for struct to struct mapping.
 There are two use cases: Manual and Auto.<br>
