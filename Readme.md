@@ -11,11 +11,16 @@ it is important that not only the field names match, but also their types.
 This mode also supports structures in structure fields and automatically works by matching field names. 
 It's based on [fmap](https://github.com/insei/fmap) switch case and reflect based library.
 
-
 Both modes are route based. In which the reflect.Type of the source structure and the type of the destination structure 
 are specified. If such a route was not found, gomapper will return an error.
 
 Also `gomapper` support slices, you don't need to specify types of slices for mapping.
+
+## Installation
+
+```bash
+go get github.com/insei/gomapper@latest
+```
 
 ## Examples
 You can found a lot of examples in tests.<br>
