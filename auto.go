@@ -3,27 +3,31 @@ package gomapper
 import (
 	"reflect"
 
-	"github.com/insei/fmap"
+	"github.com/insei/fmap/v3"
 )
 
-var manualFieldRoutes = map[reflect.Type]map[string]string{}
+var (
+	manualFieldRoutes = map[reflect.Type]map[string]string{}
+)
 
 func AutoRoute[TSource, TDest any | []any](options ...AutoMapperOption) error {
 	s := new(TSource)
 	d := new(TDest)
-	sourceFields := fmap.GetFrom(s)
-	destFields := fmap.GetFrom(d)
+	sourceStorage, _ := fmap.GetFrom(s)
+	destStorage, _ := fmap.GetFrom(d)
 	sourceType := reflect.TypeOf(s)
 
 	parseOptions(options, sourceType)
 
 	mapFunc := func(source TSource, dest *TDest) error {
-		for key, sourceFld := range sourceFields {
-			destFld, ok := destFields[getDestFieldName(sourceType, key)]
+		for _, sourcePath := range sourceStorage.GetAllPaths() {
+			destFld, ok := destStorage.Find(getDestFieldName(sourceType, sourcePath))
 			if !ok {
 				continue
 			}
-			if err := setFieldRecursive(sourceFld, destFld, source, dest); err != nil {
+
+			srcFld := sourceStorage.MustFind(sourcePath)
+			if err := setFieldRecursive(srcFld, destFld, source, dest); err != nil {
 				return err
 			}
 		}
@@ -41,6 +45,7 @@ func parseOptions(options []AutoMapperOption, sourceType reflect.Type) {
 			}
 			manualFieldRoutes[sourceType][autoMapperOption.source] = autoMapperOption.dest
 		}
+
 	}
 }
 
@@ -49,7 +54,7 @@ func setFieldRecursive(sourceFld, destFld fmap.Field, source, dest any) error {
 		return r(sourceFld.Get(source), destFld.GetPtr(dest))
 	}
 
-	if sourceFld.Type.Kind() != reflect.Struct {
+	if sourceFld.GetType().Kind() != reflect.Struct {
 		sourceVal := sourceFld.Get(source)
 		if sourceVal != nil {
 			destFld.Set(dest, sourceVal)
@@ -58,12 +63,15 @@ func setFieldRecursive(sourceFld, destFld fmap.Field, source, dest any) error {
 	}
 
 	sourceStructField := sourceFld.GetPtr(source)
-	sourceFields := fmap.GetFrom(sourceStructField)
-	destStructField := destFld.GetPtr(dest)
-	destFields := fmap.GetFrom(destStructField)
+	sourceStorage, _ := fmap.GetFrom(sourceStructField)
 
-	for fieldName, sField := range sourceFields {
-		dField, ok := destFields[getDestFieldName(sField.Type, fieldName)]
+	destStructField := destFld.GetPtr(dest)
+	destStorage, _ := fmap.GetFrom(destStructField)
+
+	for _, sPath := range sourceStorage.GetAllPaths() {
+		sField := sourceStorage.MustFind(sPath)
+		dPath := getDestFieldName(sField.GetType(), sPath)
+		dField, ok := destStorage.Find(dPath)
 		if !ok {
 			continue
 		}
@@ -76,8 +84,8 @@ func setFieldRecursive(sourceFld, destFld fmap.Field, source, dest any) error {
 }
 
 func getRouteIfExists(sourceFld, destFld fmap.Field) (func(source interface{}, dest interface{}) error, bool) {
-	destType := destFld.Type
-	sourceType := sourceFld.Type
+	destType := destFld.GetType()
+	sourceType := sourceFld.GetType()
 	for sourceType.Kind() == reflect.Ptr {
 		sourceType = sourceType.Elem()
 	}
