@@ -48,6 +48,7 @@ type DeepNestedStructDest struct {
 
 func TestAutoRoute(t *testing.T) {
 	_ = AutoRoute[AutoMappingStructSource, AutoMappingStructDest]()
+	_ = AutoRoute[TestingStructSource, TestingStructDest]()
 	t.Run("Auto route without options", func(t *testing.T) {
 		ptrTime := time.Now()
 		ptrUuid := uuid.New()
@@ -60,13 +61,24 @@ func TestAutoRoute(t *testing.T) {
 		assert.Equal(t, source.PtrUUID, dest.PtrUUID)
 		assert.Equal(t, source.PtrTime, dest.PtrTime)
 	})
-	_ = AutoRoute[AutoMappingStructSource, AutoMappingStructDest](WithFieldRoute("Name", "SecondName"))
+	timeNow := time.Now()
+	_ = AutoRoute[AutoMappingStructSource, AutoMappingStructDest](WithFunc(func(source AutoMappingStructSource, dest *AutoMappingStructDest) {
+		if source.Name == "Test1" {
+			dest.SecondName = "Test2"
+		}
+		if source.PtrTime == nil {
+			dest.PtrTime = &timeNow
+		}
+		dest.Time = timeNow
+	}))
 	t.Run("Auto route with options", func(t *testing.T) {
 		source := &AutoMappingStructSource{Name: "Test1"}
 		dest, err := MapTo[AutoMappingStructDest](source)
 		assert.NoError(t, err)
-		assert.Equal(t, "", dest.Name)
-		assert.Equal(t, source.Name, dest.SecondName)
+		assert.Equal(t, source.Name, dest.Name)
+		assert.Equal(t, "Test2", dest.SecondName)
+		assert.Equal(t, timeNow, *dest.PtrTime)
+		assert.Equal(t, timeNow, dest.Time)
 	})
 	t.Run("Auto mapping struct fields", func(t *testing.T) {
 		source := &AutoMappingStructSource{

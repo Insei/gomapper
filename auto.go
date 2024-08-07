@@ -10,14 +10,17 @@ var (
 	manualFieldRoutes = map[reflect.Type]map[string]string{}
 )
 
-func AutoRoute[TSource, TDest any | []any](options ...AutoMapperOption) error {
+func AutoRoute[TSource, TDest any | []any](opts ...Option) error {
 	s := new(TSource)
 	d := new(TDest)
 	sourceStorage, _ := fmap.GetFrom(s)
 	destStorage, _ := fmap.GetFrom(d)
 	sourceType := reflect.TypeOf(s)
 
-	parseOptions(options, sourceType)
+	opt := &options{}
+	for _, o := range opts {
+		o.apply(opt)
+	}
 
 	mapFunc := func(source TSource, dest *TDest) error {
 		for _, sourcePath := range sourceStorage.GetAllPaths() {
@@ -27,26 +30,26 @@ func AutoRoute[TSource, TDest any | []any](options ...AutoMapperOption) error {
 			}
 
 			srcFld := sourceStorage.MustFind(sourcePath)
+			if destFld.GetType() != srcFld.GetType() {
+				continue
+			}
 			if err := setFieldRecursive(srcFld, destFld, source, dest); err != nil {
 				return err
 			}
 		}
-		return nil
-	}
-	return AddRoute[TSource, TDest](mapFunc)
-}
 
-func parseOptions(options []AutoMapperOption, sourceType reflect.Type) {
-	for _, option := range options {
-		switch autoMapperOption := option.(type) {
-		case fieldPathOption:
-			if manualFieldRoutes[sourceType] == nil {
-				manualFieldRoutes[sourceType] = map[string]string{}
+		for _, o := range opt.Fns {
+			fn, ok := o.(func(TSource, *TDest))
+			if !ok {
+				continue
 			}
-			manualFieldRoutes[sourceType][autoMapperOption.source] = autoMapperOption.dest
+			fn(source, dest)
 		}
 
+		return nil
 	}
+
+	return AddRoute[TSource, TDest](mapFunc)
 }
 
 func setFieldRecursive(sourceFld, destFld fmap.Field, source, dest any) error {

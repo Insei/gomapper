@@ -1,17 +1,21 @@
 package gomapper
 
-type AutoMapperOption interface {
+type withFuncOption[TSource, TDest any] struct {
+	fn func(TSource, *TDest)
 }
 
-type fieldPathOption struct {
-	AutoMapperOption
-	source string
-	dest   string
+type options struct {
+	Fns []any
 }
 
-func WithFieldRoute(source, dest string) AutoMapperOption {
-	return fieldPathOption{
-		source: source,
-		dest:   dest,
-	}
+type Option interface {
+	apply(*options)
+}
+
+func (a withFuncOption[TSource, TDest]) apply(opts *options) {
+	opts.Fns = append(opts.Fns, a.fn)
+}
+
+func WithFunc[TSource, TDest any](fn func(TSource, *TDest)) Option {
+	return &withFuncOption[TSource, TDest]{fn: fn}
 }
