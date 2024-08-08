@@ -53,9 +53,17 @@ func TestMapTo(t *testing.T) {
 		dest, err := MapTo[[]TestingStructDest](source)
 		assert.NoError(t, err)
 		assert.Equal(t, len(source), len(dest))
-		for i, _ := range source {
+		for i := range source {
 			assert.Equal(t, source[i].Name, dest[i].Name)
 		}
+	})
+	t.Run("Source is an empty slice", func(t *testing.T) {
+		source := make([]TestingStructSource, 0)
+		dest, err := MapTo[[]TestingStructDest](source)
+		assert.NoError(t, err)
+		assert.NotNil(t, source)
+		assert.NotNil(t, dest)
+		assert.Equal(t, len(source), len(dest))
 	})
 	t.Run("Source is a slice with pointer elements", func(t *testing.T) {
 		source := []*TestingStructSource{
@@ -72,9 +80,17 @@ func TestMapTo(t *testing.T) {
 		dest, err := MapTo[[]TestingStructDest](source)
 		assert.NoError(t, err)
 		assert.Equal(t, len(source), len(dest))
-		for i, _ := range source {
+		for i := range source {
 			assert.Equal(t, source[i].Name, dest[i].Name)
 		}
+	})
+	t.Run("Source is an empty slice with pointer elements", func(t *testing.T) {
+		source := make([]*TestingStructSource, 0)
+		dest, err := MapTo[[]TestingStructDest](source)
+		assert.NoError(t, err)
+		assert.NotNil(t, source)
+		assert.NotNil(t, dest)
+		assert.Equal(t, len(source), len(dest))
 	})
 	t.Run("Source is a slice with pointer elements, dest is a slice with pointer elements", func(t *testing.T) {
 		source := []*TestingStructSource{
@@ -91,9 +107,17 @@ func TestMapTo(t *testing.T) {
 		dest, err := MapTo[[]*TestingStructDest](source)
 		assert.NoError(t, err)
 		assert.Equal(t, len(source), len(dest))
-		for i, _ := range source {
+		for i := range source {
 			assert.Equal(t, source[i].Name, dest[i].Name)
 		}
+	})
+	t.Run("Source is an empty slice with pointer elements, dest is a slice with pointer elements", func(t *testing.T) {
+		source := make([]*TestingStructSource, 0)
+		dest, err := MapTo[[]*TestingStructDest](source)
+		assert.NoError(t, err)
+		assert.NotNil(t, source)
+		assert.NotNil(t, dest)
+		assert.Equal(t, len(source), len(dest))
 	})
 	t.Run("Source is a slice pointer", func(t *testing.T) {
 		source := &[]TestingStructSource{
@@ -110,9 +134,18 @@ func TestMapTo(t *testing.T) {
 		dest, err := MapTo[[]TestingStructDest](source)
 		assert.NoError(t, err)
 		assert.Equal(t, len(*source), len(dest))
-		for i, _ := range *source {
+		for i := range *source {
 			assert.Equal(t, (*source)[i].Name, dest[i].Name)
 		}
+	})
+	t.Run("Source is an empty slice pointer", func(t *testing.T) {
+		arr := make([]TestingStructSource, 0)
+		source := &arr
+		dest, err := MapTo[[]TestingStructDest](source)
+		assert.NoError(t, err)
+		assert.NotNil(t, source)
+		assert.NotNil(t, dest)
+		assert.Equal(t, len(*source), len(dest))
 	})
 	t.Run("Dest is a slice with pointer elements", func(t *testing.T) {
 		source := []TestingStructSource{
@@ -129,9 +162,17 @@ func TestMapTo(t *testing.T) {
 		dest, err := MapTo[[]*TestingStructDest](source)
 		assert.NoError(t, err)
 		assert.Equal(t, len(source), len(dest))
-		for i, _ := range source {
+		for i := range source {
 			assert.Equal(t, (source)[i].Name, dest[i].Name)
 		}
+	})
+	t.Run("Dest is an empty slice with pointer elements", func(t *testing.T) {
+		source := make([]TestingStructSource, 0)
+		dest, err := MapTo[[]*TestingStructDest](source)
+		assert.NoError(t, err)
+		assert.NotNil(t, source)
+		assert.NotNil(t, dest)
+		assert.Equal(t, len(source), len(dest))
 	})
 	t.Run("Source is a pointer to pointer", func(t *testing.T) {
 		source := &TestingStructSource{Name: "Test1"}
@@ -176,7 +217,7 @@ func TestMap(t *testing.T) {
 		err := Map(source, &dest)
 		assert.NoError(t, err)
 		assert.Equal(t, len(source), len(dest))
-		for i, _ := range source {
+		for i := range source {
 			assert.Equal(t, source[i].Name, dest[i].Name)
 		}
 	})
@@ -196,7 +237,7 @@ func TestMap(t *testing.T) {
 		err := Map(source, &dest)
 		assert.NoError(t, err)
 		assert.Equal(t, len(*source), len(dest))
-		for i, _ := range *source {
+		for i := range *source {
 			assert.Equal(t, (*source)[i].Name, dest[i].Name)
 		}
 	})
