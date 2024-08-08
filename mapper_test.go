@@ -221,6 +221,18 @@ func TestMap(t *testing.T) {
 			assert.Equal(t, source[i].Name, dest[i].Name)
 		}
 	})
+	t.Run("Source is an empty slice", func(t *testing.T) {
+		source := make([]TestingStructSource, 0)
+		var dest []TestingStructDest
+		err := Map(source, &dest)
+		assert.NoError(t, err)
+		assert.NotNil(t, source)
+		assert.NotNil(t, dest)
+		assert.Equal(t, len(source), len(dest))
+		for i := range source {
+			assert.Equal(t, source[i].Name, dest[i].Name)
+		}
+	})
 	t.Run("Source is a pointer to slice", func(t *testing.T) {
 		source := &[]TestingStructSource{
 			{
@@ -233,6 +245,17 @@ func TestMap(t *testing.T) {
 				Name: "ArrayTest3",
 			},
 		}
+		var dest []TestingStructDest
+		err := Map(source, &dest)
+		assert.NoError(t, err)
+		assert.Equal(t, len(*source), len(dest))
+		for i := range *source {
+			assert.Equal(t, (*source)[i].Name, dest[i].Name)
+		}
+	})
+	t.Run("Source is a pointer to empty slice", func(t *testing.T) {
+		arr := make([]TestingStructSource, 0)
+		source := &arr
 		var dest []TestingStructDest
 		err := Map(source, &dest)
 		assert.NoError(t, err)
