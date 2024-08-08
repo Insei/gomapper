@@ -52,32 +52,6 @@ func addSliceRoutes[TSource, TDest any]() {
 		return nil
 	})
 	//source slice is a value, dest slice is a pointer
-	addSliceRoute(func(sourceSlice *[]TSource, pointerDestSlice *[]TDest) error {
-		if len(*sourceSlice) == 0 {
-			*pointerDestSlice = make([]TDest, 0)
-		}
-		for _, source := range *sourceSlice {
-			dest, err := MapTo[TDest](source)
-			if err != nil {
-				return err
-			}
-			*pointerDestSlice = append(*pointerDestSlice, dest)
-		}
-		return nil
-	})
-	addSliceRoute(func(sourceSlice *[]TSource, pointerDestSlice *[]*TDest) error {
-		if len(*sourceSlice) == 0 {
-			*pointerDestSlice = make([]*TDest, 0)
-		}
-		for _, source := range *sourceSlice {
-			dest, err := MapTo[TDest](source)
-			if err != nil {
-				return err
-			}
-			*pointerDestSlice = append(*pointerDestSlice, &dest)
-		}
-		return nil
-	})
 	addSliceRoute(func(sourceSlice []*TSource, pointerDestSlice *[]TDest) error {
 		if len(sourceSlice) == 0 {
 			*pointerDestSlice = make([]TDest, 0)
@@ -96,32 +70,6 @@ func addSliceRoutes[TSource, TDest any]() {
 			*pointerDestSlice = make([]*TDest, 0)
 		}
 		for _, source := range sourceSlice {
-			dest, err := MapTo[TDest](source)
-			if err != nil {
-				return err
-			}
-			*pointerDestSlice = append(*pointerDestSlice, &dest)
-		}
-		return nil
-	})
-	addSliceRoute(func(sourceSlice *[]*TSource, pointerDestSlice *[]TDest) error {
-		if len(*sourceSlice) == 0 {
-			*pointerDestSlice = make([]TDest, 0)
-		}
-		for _, source := range *sourceSlice {
-			dest, err := MapTo[TDest](source)
-			if err != nil {
-				return err
-			}
-			*pointerDestSlice = append(*pointerDestSlice, dest)
-		}
-		return nil
-	})
-	addSliceRoute(func(sourceSlice *[]*TSource, pointerDestSlice *[]*TDest) error {
-		if len(*sourceSlice) == 0 {
-			*pointerDestSlice = make([]*TDest, 0)
-		}
-		for _, source := range *sourceSlice {
 			dest, err := MapTo[TDest](source)
 			if err != nil {
 				return err
