@@ -2,6 +2,7 @@ package gomapper
 
 import (
 	"reflect"
+	"slices"
 
 	"github.com/insei/fmap/v3"
 )
@@ -31,6 +32,9 @@ func AutoRoute[TSource, TDest any | []any](opts ...Option) error {
 
 			srcFld := sourceStorage.MustFind(sourcePath)
 			if destFld.GetType() != srcFld.GetType() {
+				continue
+			}
+			if slices.Contains(opt.Excluded, srcFld) {
 				continue
 			}
 			if err := setFieldRecursive(srcFld, destFld, source, dest); err != nil {

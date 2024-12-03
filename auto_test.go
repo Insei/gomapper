@@ -9,6 +9,7 @@ import (
 )
 
 type AutoMappingStructSource struct {
+	Age          int
 	Name         string
 	Time         time.Time
 	UUID         uuid.UUID
@@ -18,10 +19,11 @@ type AutoMappingStructSource struct {
 }
 
 type AutoMappingStructDest struct {
+	UUID         uuid.UUID
+	Age          int
 	Name         string
 	SecondName   string
 	Time         time.Time
-	UUID         uuid.UUID
 	PtrTime      *time.Time
 	PtrUUID      *uuid.UUID
 	NestedStruct NestedStructDest
@@ -70,15 +72,24 @@ func TestAutoRoute(t *testing.T) {
 			dest.PtrTime = &timeNow
 		}
 		dest.Time = timeNow
-	}))
+	}),
+		WithFieldSkip(func(dest *AutoMappingStructSource) any {
+			return &dest.UUID
+		}),
+		WithFieldSkip(func(dest *AutoMappingStructSource) any {
+			return &dest.Age
+		}),
+	)
 	t.Run("Auto route with options", func(t *testing.T) {
-		source := &AutoMappingStructSource{Name: "Test1"}
+		source := &AutoMappingStructSource{UUID: uuid.New(), Name: "Test1", Age: 25}
 		dest, err := MapTo[AutoMappingStructDest](source)
 		assert.NoError(t, err)
 		assert.Equal(t, source.Name, dest.Name)
 		assert.Equal(t, "Test2", dest.SecondName)
 		assert.Equal(t, timeNow, *dest.PtrTime)
 		assert.Equal(t, timeNow, dest.Time)
+		assert.Equal(t, 0, dest.Age)
+		assert.Equal(t, uuid.Nil, dest.UUID)
 	})
 	t.Run("Auto mapping struct fields", func(t *testing.T) {
 		source := &AutoMappingStructSource{
