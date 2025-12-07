@@ -31,12 +31,15 @@ func AutoRoute[TSource, TDest any | []any](opts ...Option) error {
 			}
 
 			srcFld := sourceStorage.MustFind(sourcePath)
-			if destFld.GetType() != srcFld.GetType() {
-				continue
-			}
 			if slices.Contains(opt.Excluded, srcFld) {
 				continue
 			}
+
+			if destFld.GetType() != srcFld.GetType() {
+				_ = Map(srcFld.Get(source), destFld.GetPtr(dest))
+				continue
+			}
+
 			if err := setFieldRecursive(srcFld, destFld, source, dest); err != nil {
 				return err
 			}
